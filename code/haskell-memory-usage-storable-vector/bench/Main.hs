@@ -7,6 +7,7 @@ module Main (main) where
 
 import qualified Data.Vector as V
 import qualified Data.Vector.Storable as VS
+import qualified Data.Vector.Unboxed as VU
 import           Data.Foldable (for_)
 import qualified Weigh
 import           Weigh (Column(..))
@@ -57,3 +58,27 @@ main = do
       for_ powersOf10 $ \(e :: Int) -> do
         let n = 10 ^ e
         Weigh.func ("Storable Vectors " <> " " <> show n) makeNManyStorableVectors n
+
+    Weigh.wgroup "Data.Vector of singleton Unboxed Vectors" $ do
+      -- In this test we create an outer normal Vector of Storable vectors:
+      --   outerVector = [
+      --     [ (index 0) pointer to -> UnboxedVector=[0 :: Int]
+      --     , (index 1) pointer to -> UnboxedVector=[1 :: Int]
+      --     , (index 2) pointer to -> UnboxedVector=[2 :: Int]
+      --     ...
+      --     ]
+      -- We can conclude the memory overhead of a Unboxed Vector (not including
+      -- its contents) by looking at the memory usage for this test,
+      -- and (assuming 64-bit) subtracting:
+      --   * 1 Word each of the outer Vector's entry pointers
+      --   * 1 Word for the contents being 1 `Int` in an inner Unboxed Vector
+      -- On my machine I get 80 Bytes memory usage per outer vector entry,
+      -- thus 64 - 2*8 = 48 Bytes overhead per Unboxed Vector.
+
+      let makeNManyUnboxedVectors n =
+            V.generate n $ \i -> -- outer vector we use to allocate `n` many inner vectors
+              VU.singleton (i :: Int) -- inner vector, what we want to measure
+
+      for_ powersOf10 $ \(e :: Int) -> do
+        let n = 10 ^ e
+        Weigh.func ("Unboxed Vectors " <> " " <> show n) makeNManyUnboxedVectors n

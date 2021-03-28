@@ -262,6 +262,22 @@ This is quite a bit, when storing:
 So my next task is clear: By changing my program from using many individual small Storable vectors, to fewer individual Storable vectors which each have more than 3 entries, I could reduce my memory usage by the indicated factors.
 
 
+## Bonus info: Storable vs Unboxed vectors
+
+There are many places on the Internet where the pros and cons of `Storable` vs `Unboxed` vectors are discussed, including [this StackOverflow question](https://stackoverflow.com/questions/40176678/differences-between-storable-and-unboxed-vectors) and [this `vector` issue](https://github.com/haskell/vector/issues/250).
+
+I was curious which one needs less memory overhead.
+
+In there, my friend Alexey already [pointed out](https://github.com/haskell/vector/issues/250#issuecomment-643149635):
+
+> `Unbox` has slightly lower memory overhead than `Storable`, because `ForeignPtr` besides the pointer actual `Addr#` also carries around the `MutableByteArray#` in a sum type. This can only be noticeable for very small vectors, which `Storable` shouldn't be used for anyways.
+
+He is right: I added a benchmark to my `weigh` script above, and found that:
+
+* `Data.Vector.Storable.Vector Int` has 64 Bytes overhead
+* `Data.Vector.Unboxed.Vector Int` has 48 Bytes overhead.
+
+
 ## Appendix: Eschewing single-constructor allocation with `UNPACK`
 
 The fact that `UNPACK`ing single constructors avoids the allocationg of not only the pointer, but also the single constructor, does not seem to be documented in user-facing GHC docs yet.
