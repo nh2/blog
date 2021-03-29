@@ -30,7 +30,7 @@ data Vector a = Vector {-# UNPACK #-} !Int
 ```
 
 The `{-# UNPACK #-}` pragma is a memory saving technique:
-Usually GHC would store store (into the memory behind the `Vector` value constructor) pointers to the `Int` and `ForeignPtr a` constructors.
+Usually GHC would store (into the memory behind the `Vector` value constructor) pointers to the `Int` and `ForeignPtr a` constructors.
 The pragma makes GHC store their _actual_ constructors directly, in place of those pointers.
 You can read more about this pragma [in the docs](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/pragmas.html#unpack-pragma).
 It only works on _strict_ constructor fields (indicated by a _bang_ `!`).
@@ -152,7 +152,7 @@ In that case, the N Storable Vectors would be heap objects, and must carry aroun
 
 Thus their total memory usage would be `7 + 1 = 8 Words`, so 64 Bytes.
 
-This result is different from from the incorrect 9 Words we obtained before.
+This result is different from the incorrect 9 Words we obtained before.
 
 
 ## Alternative how to count
